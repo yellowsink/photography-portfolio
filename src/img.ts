@@ -1,6 +1,7 @@
 import sharp from "sharp";
 import exiftool from "exiftool";
 
+// i'm pretty sure there's a memory leak somewhere here but idk where
 export async function processImage(image: ArrayBuffer) {
   const exif = await new Promise<object>((res, rej) =>
     exiftool.metadata(new Uint8Array(image), (err: unknown, metadata: object) => {
