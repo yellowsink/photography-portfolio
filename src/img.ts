@@ -3,7 +3,7 @@ import exiftool from "exiftool";
 
 export async function processImage(image: ArrayBuffer) {
   const exif = await new Promise<object>((res, rej) =>
-    exiftool.metadata(image, (err: unknown, metadata: object) => {
+    exiftool.metadata(new Uint8Array(image), (err: unknown, metadata: object) => {
       if (err) rej(err);
       res(metadata);
     })
