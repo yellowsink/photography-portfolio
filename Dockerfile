@@ -3,6 +3,8 @@ WORKDIR /app
 
 LABEL org.opencontainers.image.source=https://github.com/yellowsink/photography-portfolio
 
+RUN apt-get install libimage-exiftool-perl
+
 COPY src src
 COPY deno.json .
 COPY deno.lock .

@@ -3,7 +3,7 @@
   "specifiers": {
     "jsr:@bradenmacdonald/s3-lite-client@~0.9.6": "0.9.6",
     "npm:date-fns@^4.1.0": "4.1.0",
-    "npm:exif-reader@^2.0.3": "2.0.3",
+    "npm:exiftool@^0.0.3": "0.0.3",
     "npm:hono@^4.12.15": "4.12.15",
     "npm:sharp@~0.34.5": "0.34.5"
   },
@@ -180,8 +180,8 @@
     "detect-libc@2.1.2": {
       "integrity": "sha512-Btj2BOOO83o3WyH59e8MgXsxEQVcarkUOpEYrubB0urwnN10yQ364rsiByU11nZlqWYZm05i/of7io4mzihBtQ=="
     },
-    "exif-reader@2.0.3": {
-      "integrity": "sha512-zFbQvguwT9JkqyYhR7pjE1Yn8SagwaGLNRU0Oh14xFa1paSf5Gzxn4gxgk0XhnudI0UIqU+HgnBX93+nva592A=="
+    "exiftool@0.0.3": {
+      "integrity": "sha512-7xq/yI+ESuZEApWOTxp7bJ12XRjt+3LDqkCBLBkfrYDF3hQE65Lid/U2xYf7iCZ2LUBRWqsix1fXEfGvn9oTGw=="
     },
     "hono@4.12.15": {
       "integrity": "sha512-qM0jDhFEaCBb4TxoW7f53Qrpv9RBiayUHo0S52JudprkhvpjIrGoU1mnnr29Fvd1U335ZFPZQY1wlkqgfGXyLg=="
@@ -233,7 +233,7 @@
     "dependencies": [
       "jsr:@bradenmacdonald/s3-lite-client@~0.9.6",
       "npm:date-fns@^4.1.0",
-      "npm:exif-reader@^2.0.3",
+      "npm:exiftool@^0.0.3",
       "npm:hono@^4.12.15",
       "npm:sharp@~0.34.5"
     ]

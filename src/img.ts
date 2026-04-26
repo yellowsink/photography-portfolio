@@ -1,20 +1,15 @@
-import sharp from "sharp"
-import exif from "exif-reader"
-
-function postProcessExifRef(exif: exif.Exif | undefined) {
-	delete exif?.Image?.PrintImageMatching;
-	delete exif?.Photo?.MakerNote;
-}
+import sharp from "sharp";
+import exiftool from "exiftool";
 
 export async function processImage(image: ArrayBuffer) {
-	const shp = sharp(image);
+  const exif = await new Promise<object>((res, rej) =>
+    exiftool.metadata(image, (err: unknown, metadata: object) => {
+      if (err) rej(err);
+      res(metadata);
+    })
+  );
 
-	const meta = await shp.metadata();
+  const webp = await sharp(image).toFormat("webp").toBuffer();
 
-	const exifParsed = meta.exif && exif(meta.exif);
-	postProcessExifRef(exifParsed);
-
-	const webp = await shp.toFormat("webp").toBuffer();
-
-	return { exif: exifParsed, compressed: webp };
+  return { exif, compressed: webp };
 }
