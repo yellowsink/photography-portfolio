@@ -1,6 +1,8 @@
 FROM denoland/deno:alpine
 WORKDIR /app
 
+LABEL org.opencontainers.image.source=https://github.com/yellowsink/photography-portfolio
+
 COPY src src
 COPY deno.json .
 COPY deno.lock .
