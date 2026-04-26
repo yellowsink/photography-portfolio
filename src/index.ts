@@ -104,7 +104,7 @@ app.post("/admin/photo", async (ctx) => {
   const { compressed, exif } = await processImage(body);
 
   const taken = lightFormat(
-    exif?.Photo?.DateTimeOriginal ?? new Date(),
+    (exif as any)?.createDate ?? new Date(),
     "yyy-MM-dd HH:mm:ss",
   );
 
