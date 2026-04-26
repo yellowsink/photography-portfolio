@@ -103,10 +103,12 @@ app.post("/admin/photo", async (ctx) => {
   // webp-ize and extract EXIF
   const { compressed, exif } = await processImage(body);
 
-  const taken = (exif as any)?.createDate ?? lightFormat(
-    new Date(),
-    "yyy-MM-dd HH:mm:ss",
-  );
+  const rawTaken = (exif as any)?.createDate ?? lightFormat(
+	  new Date(),
+	  "yyyy:MM:dd HH:mm:ss",
+  ).split(" ");
+
+  const taken = rawTaken[0].replaceAll(":", "-") + " " + rawTaken[1];
 
   await uploadS3(filename, compressed.buffer as ArrayBuffer);
 
