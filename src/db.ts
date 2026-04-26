@@ -47,6 +47,10 @@ export const getPhotosByCategory = (category: string) =>
       (photo.categories as string)?.split?.(",").includes(category)
     );
 
+export const getPhoto = (id: number) => DATABASE_CONN.prepare(`SELECT * FROM photos WHERE id = ?`).get(id);
+
+export const getRoll = (id: number) => DATABASE_CONN.prepare(`SELECT * FROM rolls WHERE id = ?`).get(id);
+
 export const getFeaturedCategories = () =>
   DATABASE_CONN.prepare(`SELECT * FROM featured_categories`).all();
 

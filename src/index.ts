@@ -2,21 +2,21 @@ import { Hono } from "hono";
 import { basicAuth } from "hono/basic-auth";
 
 import {
-  addPhoto,
-  addRoll,
-  deletePhoto,
-  deleteRoll,
-  getFeaturedCategories,
-  getPhotosByCategory,
-  getRollPhotos,
-  getRolls,
-  modifyPhoto,
-  modifyRoll,
-  removeFeaturedCategory,
-  upsertFeaturedCategory,
+	addPhoto,
+	addRoll,
+	deletePhoto,
+	deleteRoll,
+	getFeaturedCategories, getPhoto,
+	getPhotosByCategory,
+	getRollPhotos,
+	getRolls,
+	modifyPhoto,
+	modifyRoll,
+	removeFeaturedCategory,
+	upsertFeaturedCategory,
 } from "./db.ts";
 
-import { deleteS3, S3_BASE_URL, uploadS3 } from "./s3.ts";
+import {deleteS3, getS3, S3_BASE_URL, uploadS3} from "./s3.ts";
 
 const app = new Hono();
 
@@ -91,6 +91,8 @@ app.post("/admin/photo", async (ctx) => {
   const body = await ctx.req.arrayBuffer();
   if (!body) return ctx.text("Missing body", 400);
 
+	// TODO: this is a good place to webp-ize the image and maybe extract exif?
+	// make sure to store the content-type in the database, and exif.
   await uploadS3(filename, body);
 
   return ctx.json(
@@ -145,5 +147,24 @@ app.get(
 );
 
 app.get("/photo_url_base", (ctx) => ctx.text(S3_BASE_URL));
+
+app.get("/photo/:id", async (ctx) => {
+	const photo = getPhoto(+ctx.req.param("id"));
+	if (!photo?.filename) return ctx.text("Not found", 404);
+
+	const s3Resp = await getS3(photo.filename as string);
+
+	return new Response(s3Resp.body, {
+		headers: {
+			// TODO: this can be wrong, store content type and EXIF in database!
+			"Content-Type": s3Resp.headers.get("Content-Type") ?? "",
+			"Content-Length": s3Resp.headers.get("Content-Length") ?? "",
+			"ETag": s3Resp.headers.get("ETag") ?? "",
+
+			// the important bit!
+			"Cache-Control": "max-age=31557600, public, immutable"
+		}
+	})
+})
 
 Deno.serve(app.fetch);
