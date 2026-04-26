@@ -5,11 +5,12 @@ LABEL org.opencontainers.image.source=https://github.com/yellowsink/photography-
 
 RUN apt-get update && apt-get install exiftool -y
 
-COPY src src
 COPY deno.json .
 COPY deno.lock .
 
 RUN deno install --frozen
+
+COPY src src
 
 CMD ["deno", "run", "-A", "src/index.ts"]
 

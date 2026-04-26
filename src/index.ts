@@ -103,10 +103,10 @@ app.post("/admin/photo", async (ctx) => {
   // webp-ize and extract EXIF
   const { compressed, exif } = await processImage(body);
 
-  const rawTaken = (exif as any)?.createDate ?? lightFormat(
+  const rawTaken = ((exif as any)?.createDate ?? lightFormat(
 	  new Date(),
 	  "yyyy:MM:dd HH:mm:ss",
-  ).split(" ");
+  )).split(" ");
 
   const taken = rawTaken[0].replaceAll(":", "-") + " " + rawTaken[1];
 
