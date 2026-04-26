@@ -1,7 +1,8 @@
 import { DatabaseSync, SQLInputValue } from "node:sqlite";
+import { CONFIG } from "./config.ts";
 
 const DATABASE_CONN = new DatabaseSync(
-  Deno.env.get("PORTFOLIO_DB") ?? "portfolio.db",
+  CONFIG.PORTFOLIO_DB,
 );
 
 // init database
@@ -47,9 +48,11 @@ export const getPhotosByCategory = (category: string) =>
       (photo.categories as string)?.split?.(",").includes(category)
     );
 
-export const getPhoto = (id: number) => DATABASE_CONN.prepare(`SELECT * FROM photos WHERE id = ?`).get(id);
+export const getPhoto = (id: number) =>
+  DATABASE_CONN.prepare(`SELECT * FROM photos WHERE id = ?`).get(id);
 
-export const getRoll = (id: number) => DATABASE_CONN.prepare(`SELECT * FROM rolls WHERE id = ?`).get(id);
+export const getRoll = (id: number) =>
+  DATABASE_CONN.prepare(`SELECT * FROM rolls WHERE id = ?`).get(id);
 
 export const getFeaturedCategories = () =>
   DATABASE_CONN.prepare(`SELECT * FROM featured_categories`).all();

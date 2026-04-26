@@ -1,22 +1,12 @@
-/*import {
-  DeleteObjectCommand,
-  GetObjectCommand,
-  PutObjectCommand,
-  S3Client,
-} from "@aws-sdk/client-s3";
-import { NodeHttpHandler } from "@smithy/node-http-handler";*/
 import { S3Client } from "@bradenmacdonald/s3-lite-client";
-
-const ENDPOINT = Deno.env.get("PORTFOLIO_S3_ENDPOINT") ??
-  "https://s3.us-west-004.backblazeb2.com";
-const BUCKET = Deno.env.get("PORTFOLIO_S3_BUCKET") ?? "ys-photo-portfolio";
+import {CONFIG} from "./config.ts";
 
 const s3Client = new S3Client({
-  endPoint: ENDPOINT,
-  region: "us-west-0004",
-  bucket: BUCKET,
-  accessKey: Deno.env.get("PORTFOLIO_S3_KEY") ?? "",
-  secretKey: Deno.env.get("PORTFOLIO_S3_SECRET") ?? "",
+  endPoint: CONFIG.PORTFOLIO_S3_ENDPOINT,
+  region: "",
+  bucket: CONFIG.PORTFOLIO_S3_BUCKET,
+  accessKey: CONFIG.PORTFOLIO_S3_KEY,
+  secretKey: CONFIG.PORTFOLIO_S3_SECRET,
 });
 
 export const uploadS3 = (
@@ -28,4 +18,4 @@ export const deleteS3 = (filename: string) => s3Client.deleteObject(filename);
 
 export const getS3 = (filename: string) => s3Client.getObject(filename);
 
-export const S3_BASE_URL = `https://${BUCKET}.${ENDPOINT}/`;
+

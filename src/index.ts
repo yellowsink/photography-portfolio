@@ -16,7 +16,8 @@ import {
 	upsertFeaturedCategory,
 } from "./db.ts";
 
-import {deleteS3, getS3, S3_BASE_URL, uploadS3} from "./s3.ts";
+import {deleteS3, getS3, uploadS3} from "./s3.ts";
+import {CONFIG} from "./config.ts";
 
 const app = new Hono();
 
@@ -24,7 +25,7 @@ app.use(
   "/admin/*",
   basicAuth({
     username: "admin",
-    password: Deno.env.get("PORTFOLIO_PASSWORD") ?? "admin",
+    password: CONFIG.PORTFOLIO_PASSWORD,
   }),
 );
 
@@ -145,8 +146,6 @@ app.get(
   "/category/:name/photos",
   (ctx) => ctx.json(getPhotosByCategory(ctx.req.param("name"))),
 );
-
-app.get("/photo_url_base", (ctx) => ctx.text(S3_BASE_URL));
 
 app.get("/photo/:id", async (ctx) => {
 	const photo = getPhoto(+ctx.req.param("id"));
