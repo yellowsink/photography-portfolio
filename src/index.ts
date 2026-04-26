@@ -147,7 +147,9 @@ app.get(
   (ctx) => ctx.json(getPhotosByCategory(ctx.req.param("name"))),
 );
 
-app.get("/photo/:id", async (ctx) => {
+app.get("/photo/:id", (ctx) => ctx.json(getPhoto(+ctx.req.param("id"))));
+
+app.get("/photo/:id/file", async (ctx) => {
 	const photo = getPhoto(+ctx.req.param("id"));
 	if (!photo?.filename) return ctx.text("Not found", 404);
 
