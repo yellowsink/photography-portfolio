@@ -22,6 +22,11 @@ import {CONFIG} from "./config.ts";
 
 const app = new Hono();
 
+app.use("/*", cors({
+	origin: "*",
+	credentials: true
+}))
+
 app.use(
   "/admin/*",
   basicAuth({
@@ -29,11 +34,6 @@ app.use(
     password: CONFIG.PORTFOLIO_PASSWORD,
   }),
 );
-
-app.use("/*", cors({
-	origin: "*",
-	credentials: true
-}))
 
 // endpoints > admin > DELETE
 app.delete("/admin/roll/:id", async (ctx) => {
