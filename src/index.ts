@@ -1,31 +1,37 @@
 import { Hono } from "hono";
 import { basicAuth } from "hono/basic-auth";
-import { cors } from 'hono/cors'
+import { cors } from "hono/cors";
 
 import {
-	addPhoto,
-	addRoll,
-	deletePhoto,
-	deleteRoll,
-	getFeaturedCategories, getPhoto,
-	getPhotosByCategory,
-	getRollPhotos,
-	getRolls,
-	modifyPhoto,
-	modifyRoll,
-	removeFeaturedCategory,
-	upsertFeaturedCategory,
+  addPhoto,
+  addRoll,
+  deletePhoto,
+  deleteRoll,
+  getFeaturedCategories,
+  getPhoto,
+  getPhotosByCategory,
+  getRollPhotos,
+  getRolls,
+  modifyPhoto,
+  modifyRoll,
+  removeFeaturedCategory,
+  upsertFeaturedCategory,
 } from "./db.ts";
 
-import {deleteS3, getS3, uploadS3} from "./s3.ts";
-import {CONFIG} from "./config.ts";
+import { deleteS3, getS3, uploadS3 } from "./s3.ts";
+import { CONFIG } from "./config.ts";
+import { processImage } from "./img.ts";
+import { lightFormat } from "date-fns";
 
 const app = new Hono();
 
-app.use("/*", cors({
-	origin: "*",
-	credentials: true
-}))
+app.use(
+  "/*",
+  cors({
+    origin: "*",
+    credentials: true,
+  }),
+);
 
 app.use(
   "/admin/*",
@@ -91,16 +97,18 @@ app.post("/admin/photo", async (ctx) => {
   const filename = ctx.req.query("filename");
   if (!filename) return ctx.text("Missing filename", 400);
 
-  // TODO: parse taken date somehow
-  const taken = ctx.req.query("taken");
-  if (!taken) return ctx.text("Missing taken date", 400);
-
   const body = await ctx.req.arrayBuffer();
   if (!body) return ctx.text("Missing body", 400);
 
-	// TODO: this is a good place to webp-ize the image and maybe extract exif?
-	// make sure to store the content-type in the database, and exif.
-  await uploadS3(filename, body);
+  // webp-ize and extract EXIF
+  const { compressed, exif } = await processImage(body);
+
+  const taken = lightFormat(
+    exif?.Photo?.DateTimeOriginal ?? new Date(),
+    "yyy-MM-dd HH:mm:ss",
+  );
+
+  await uploadS3(filename, compressed.buffer as ArrayBuffer);
 
   return ctx.json(
     addPhoto(
@@ -111,6 +119,7 @@ app.post("/admin/photo", async (ctx) => {
       ctx.req.query("name"),
       ctx.req.query("desc"),
       !!ctx.req.query("fave"),
+      exif,
     ),
   );
 });
@@ -118,7 +127,13 @@ app.post("/admin/photo", async (ctx) => {
 // endpoints > admin > update
 
 app.patch("/admin/roll/:id", (ctx) => {
-  return ctx.json(modifyRoll(+ctx.req.param("id"), ctx.req.query("name"), ctx.req.query("dateadded")));
+  return ctx.json(
+    modifyRoll(
+      +ctx.req.param("id"),
+      ctx.req.query("name"),
+      ctx.req.query("dateadded"),
+    ),
+  );
 });
 
 app.patch("/admin/photo/:id", (ctx) => {
@@ -156,22 +171,21 @@ app.get(
 app.get("/photo/:id", (ctx) => ctx.json(getPhoto(+ctx.req.param("id"))));
 
 app.get("/photo/:id/file", async (ctx) => {
-	const photo = getPhoto(+ctx.req.param("id"));
-	if (!photo?.filename) return ctx.text("Not found", 404);
+  const photo = getPhoto(+ctx.req.param("id"));
+  if (!photo?.filename) return ctx.text("Not found", 404);
 
-	const s3Resp = await getS3(photo.filename as string);
+  const s3Resp = await getS3(photo.filename as string);
 
-	return new Response(s3Resp.body, {
-		headers: {
-			// TODO: this can be wrong, store content type and EXIF in database!
-			"Content-Type": s3Resp.headers.get("Content-Type") ?? "",
-			"Content-Length": s3Resp.headers.get("Content-Length") ?? "",
-			"ETag": s3Resp.headers.get("ETag") ?? "",
+  return new Response(s3Resp.body, {
+    headers: {
+      "Content-Type": "image/webp", // we know this to always be true
+      "Content-Length": s3Resp.headers.get("Content-Length") ?? "",
+      "ETag": s3Resp.headers.get("ETag") ?? "",
 
-			// the important bit!
-			"Cache-Control": "max-age=31557600, public, immutable"
-		}
-	})
-})
+      // the important bit!
+      "Cache-Control": "max-age=31557600, public, immutable",
+    },
+  });
+});
 
 Deno.serve(app.fetch);

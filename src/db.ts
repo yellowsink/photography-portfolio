@@ -25,7 +25,8 @@ DATABASE_CONN.exec(`
 		desc       TEXT,
 		is_fave    INTEGER NOT NULL DEFAULT FALSE,
 		-- yeah, I'm using comma separated inline strings. fight me.
-		categories TEXT NOT NULL DEFAULT ''
+		categories TEXT NOT NULL DEFAULT '',
+		exif       TEXT -- json
 	) STRICT;
 
 	CREATE TABLE IF NOT EXISTS featured_categories (
@@ -79,9 +80,10 @@ export const addPhoto = (
   name?: string,
   desc?: string,
   is_fave = false,
+  exif?: object,
 ) =>
   DATABASE_CONN.prepare(
-    `INSERT INTO photos (roll, filename, datetaken, name, desc, is_fave, categories) VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING *`,
+    `INSERT INTO photos (roll, filename, datetaken, name, desc, is_fave, categories, exif) VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING *`,
   )
     .get(
       roll,
@@ -91,6 +93,7 @@ export const addPhoto = (
       desc ?? null,
       +is_fave,
       categories.join(","),
+      exif ? JSON.stringify(exif) : null,
     );
 
 export const deletePhoto = (id: number) =>
@@ -107,7 +110,11 @@ export function deleteRoll(id: number) {
   return { roll, photos };
 }
 
-export function modifyRoll(id: number, name: string | undefined | null, dateadded: string | undefined) {
+export function modifyRoll(
+  id: number,
+  name: string | undefined | null,
+  dateadded: string | undefined,
+) {
   const columns: string[] = [];
   const params: SQLInputValue[] = [];
 
@@ -116,10 +123,10 @@ export function modifyRoll(id: number, name: string | undefined | null, dateadde
     params.push(name);
   }
 
-	if (dateadded !== undefined) {
-		columns.push("dateadded");
-		params.push(dateadded);
-	}
+  if (dateadded !== undefined) {
+    columns.push("dateadded");
+    params.push(dateadded);
+  }
 
   if (columns.length === 0) return;
 
