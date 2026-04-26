@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { basicAuth } from "hono/basic-auth";
+import { cors } from 'hono/cors'
 
 import {
 	addPhoto,
@@ -28,6 +29,11 @@ app.use(
     password: CONFIG.PORTFOLIO_PASSWORD,
   }),
 );
+
+app.use("/*", cors({
+	origin: "*",
+	credentials: true
+}))
 
 // endpoints > admin > DELETE
 app.delete("/admin/roll/:id", async (ctx) => {
@@ -112,7 +118,7 @@ app.post("/admin/photo", async (ctx) => {
 // endpoints > admin > update
 
 app.patch("/admin/roll/:id", (ctx) => {
-  return ctx.json(modifyRoll(+ctx.req.param("id"), ctx.req.query("desc")));
+  return ctx.json(modifyRoll(+ctx.req.param("id"), ctx.req.query("name"), ctx.req.query("dateadded")));
 });
 
 app.patch("/admin/photo/:id", (ctx) => {

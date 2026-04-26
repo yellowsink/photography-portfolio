@@ -64,7 +64,7 @@ export const upsertFeaturedCategory = (name: string, feature?: number) =>
 
 export const removeFeaturedCategory = (name: string) =>
   DATABASE_CONN.prepare(
-    `DELETE FROM featured_categories WHERE name = ? RETURNING *`,
+    `DELETE FROM featured_categories WHERE category = ? RETURNING *`,
   ).get(name);
 
 export const addRoll = (name: string) =>
@@ -107,14 +107,19 @@ export function deleteRoll(id: number) {
   return { roll, photos };
 }
 
-export function modifyRoll(id: number, desc: string | undefined | null) {
+export function modifyRoll(id: number, name: string | undefined | null, dateadded: string | undefined) {
   const columns: string[] = [];
   const params: SQLInputValue[] = [];
 
-  if (desc !== undefined) {
-    columns.push("desc");
-    params.push(desc);
+  if (name !== undefined) {
+    columns.push("name");
+    params.push(name);
   }
+
+	if (dateadded !== undefined) {
+		columns.push("dateadded");
+		params.push(dateadded);
+	}
 
   if (columns.length === 0) return;
 
