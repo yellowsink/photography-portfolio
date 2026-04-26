@@ -188,4 +188,8 @@ app.get("/photo/:id/file", async (ctx) => {
   });
 });
 
+app.post("/test", async (ctx) => {
+	return ctx.json((await processImage(await ctx.req.arrayBuffer())));
+})
+
 Deno.serve(app.fetch);
