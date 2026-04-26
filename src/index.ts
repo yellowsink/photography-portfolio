@@ -88,7 +88,7 @@ app.post("/admin/photo", async (ctx) => {
   const taken = ctx.req.query("taken");
   if (!taken) return ctx.text("Missing taken date", 400);
 
-  const body = ctx.req.raw.body;
+  const body = await ctx.req.arrayBuffer();
   if (!body) return ctx.text("Missing body", 400);
 
   await uploadS3(filename, body);

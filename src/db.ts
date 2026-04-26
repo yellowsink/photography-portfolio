@@ -60,16 +60,11 @@ export const removeFeaturedCategory = (name: string) =>
     `DELETE FROM featured_categories WHERE name = ? RETURNING *`,
   ).get(name);
 
-export function addRoll(name: string) {
-  const rollId = DATABASE_CONN.prepare(`INSERT INTO rolls (name) VALUES (?)`)
-    .get(name)?.id;
-  if (typeof rollId !== "number") {
-    throw new Error("newly created row had a non int id");
-  }
-  return rollId;
-}
+export const addRoll = (name: string) =>
+  DATABASE_CONN.prepare(`INSERT INTO rolls (name) VALUES (?) RETURNING *`)
+    .get(name);
 
-export function addPhoto(
+export const addPhoto = (
   roll: number,
   filename: string,
   taken: string,
@@ -77,9 +72,9 @@ export function addPhoto(
   name?: string,
   desc?: string,
   is_fave = false,
-) {
-  const photoId = DATABASE_CONN.prepare(
-    `INSERT INTO photos (roll, filename, datetaken, name, desc, is_fave, categories) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+) =>
+  DATABASE_CONN.prepare(
+    `INSERT INTO photos (roll, filename, datetaken, name, desc, is_fave, categories) VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING *`,
   )
     .get(
       roll,
@@ -89,13 +84,7 @@ export function addPhoto(
       desc ?? null,
       +is_fave,
       categories.join(","),
-    )?.id;
-
-  if (typeof photoId !== "number") {
-    throw new Error("newly created photo had a non int id?");
-  }
-  return photoId;
-}
+    );
 
 export const deletePhoto = (id: number) =>
   DATABASE_CONN.prepare(`DELETE FROM photos WHERE id = ? RETURNING *`).get(id);
