@@ -1,6 +1,7 @@
 {
 	"imports": {
 		"@bradenmacdonald/s3-lite-client": "jsr:@bradenmacdonald/s3-lite-client@^0.9.6",
+		"@img/sharp-wasm32": "npm:@img/sharp-wasm32@^0.34.5",
 		"date-fns": "npm:date-fns@^4.1.0",
 		"exif-reader": "npm:exif-reader@^2.0.3",
 		"hono": "npm:hono@^4.12.15",

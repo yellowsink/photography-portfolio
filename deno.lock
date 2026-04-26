@@ -2,6 +2,7 @@
   "version": "5",
   "specifiers": {
     "jsr:@bradenmacdonald/s3-lite-client@~0.9.6": "0.9.6",
+    "npm:@img/sharp-wasm32@~0.34.5": "0.34.5",
     "npm:date-fns@^4.1.0": "4.1.0",
     "npm:exif-reader@^2.0.3": "2.0.3",
     "npm:hono@^4.12.15": "4.12.15",
@@ -232,6 +233,7 @@
   "workspace": {
     "dependencies": [
       "jsr:@bradenmacdonald/s3-lite-client@~0.9.6",
+      "npm:@img/sharp-wasm32@~0.34.5",
       "npm:date-fns@^4.1.0",
       "npm:exif-reader@^2.0.3",
       "npm:hono@^4.12.15",
