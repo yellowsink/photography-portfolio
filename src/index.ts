@@ -85,6 +85,9 @@ app.post("/admin/photo", async (ctx) => {
   if (!filename) return ctx.text("Missing filename", 400);
 
   // TODO: parse taken date somehow
+  const taken = ctx.req.query("taken");
+  if (!taken) return ctx.text("Missing taken date", 400);
+
   const body = ctx.req.raw.body;
   if (!body) return ctx.text("Missing body", 400);
 
@@ -94,7 +97,7 @@ app.post("/admin/photo", async (ctx) => {
     addPhoto(
       +roll,
       filename,
-      null!,
+      taken,
       ctx.req.query("categories")?.split(","),
       ctx.req.query("name"),
       ctx.req.query("desc"),
