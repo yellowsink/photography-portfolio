@@ -1,27 +1,27 @@
-import { Hono } from "hono";
-import { basicAuth } from "hono/basic-auth";
-import { cors } from "hono/cors";
+import {Hono} from "hono";
+import {basicAuth} from "hono/basic-auth";
+import {cors} from "hono/cors";
 
 import {
-  addPhoto,
-  addRoll,
-  deletePhoto,
-  deleteRoll,
-  getFeaturedCategories,
-  getPhoto,
-  getPhotosByCategory,
-  getRollPhotos,
-  getRolls,
-  modifyPhoto,
-  modifyRoll,
-  removeFeaturedCategory,
-  upsertFeaturedCategory,
+	addPhoto,
+	addRoll,
+	deletePhoto,
+	deleteRoll,
+	getFeaturedCategories,
+	getPhoto,
+	getPhotosByCategory,
+	getRollPhotos,
+	getRolls,
+	modifyPhoto,
+	modifyRoll,
+	removeFeaturedCategory,
+	upsertFeaturedCategory,
 } from "./db.ts";
 
-import { deleteS3, getS3, uploadS3 } from "./s3.ts";
-import { CONFIG } from "./config.ts";
-import { processImage } from "./img.ts";
-import { lightFormat } from "date-fns";
+import {deleteS3, getS3, uploadS3} from "./s3.ts";
+import {CONFIG} from "./config.ts";
+import {processImage} from "./img.ts";
+import {lightFormat} from "date-fns";
 
 const app = new Hono();
 
@@ -94,8 +94,10 @@ app.post("/admin/photo", async (ctx) => {
   const roll = ctx.req.query("roll");
   if (!roll) return ctx.text("Missing roll", 400);
 
-  const filename = ctx.req.query("filename");
-  if (!filename) return ctx.text("Missing filename", 400);
+  // these filenames can be duplicated across rolls, dont use it as-is for s3
+  const rawFilename = ctx.req.query("filename");
+  if (!rawFilename) return ctx.text("Missing filename", 400);
+  const filename = `${crypto.randomUUID()}-${rawFilename}.webp`;
 
   const body = await ctx.req.arrayBuffer();
   if (!body) return ctx.text("Missing body", 400);
@@ -103,10 +105,8 @@ app.post("/admin/photo", async (ctx) => {
   // webp-ize and extract EXIF
   const { compressed, exif } = await processImage(body);
 
-  const rawTaken = ((exif as any)?.createDate ?? lightFormat(
-	  new Date(),
-	  "yyyy:MM:dd HH:mm:ss",
-  )).split(" ");
+  const rawTaken = ((exif as any)?.createDate ??
+    lightFormat(new Date(), "yyyy:MM:dd HH:mm:ss")).split(" ");
 
   const taken = rawTaken[0].replaceAll(":", "-") + " " + rawTaken[1];
 
@@ -182,7 +182,7 @@ app.get("/photo/:id/file", async (ctx) => {
     headers: {
       "Content-Type": "image/webp", // we know this to always be true
       "Content-Length": s3Resp.headers.get("Content-Length") ?? "",
-      "ETag": s3Resp.headers.get("ETag") ?? "",
+      ETag: s3Resp.headers.get("ETag") ?? "",
 
       // the important bit!
       "Cache-Control": "max-age=31557600, public, immutable",
@@ -191,7 +191,7 @@ app.get("/photo/:id/file", async (ctx) => {
 });
 
 app.post("/test", async (ctx) => {
-	return ctx.json((await processImage(await ctx.req.arrayBuffer())));
-})
+  return ctx.json(await processImage(await ctx.req.arrayBuffer()));
+});
 
 Deno.serve(app.fetch);

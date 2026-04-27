@@ -1,9 +1,7 @@
-import { DatabaseSync, SQLInputValue } from "node:sqlite";
-import { CONFIG } from "./config.ts";
+import {DatabaseSync, SQLInputValue} from "node:sqlite";
+import {CONFIG} from "./config.ts";
 
-const DATABASE_CONN = new DatabaseSync(
-  CONFIG.PORTFOLIO_DB,
-);
+const DATABASE_CONN = new DatabaseSync(CONFIG.PORTFOLIO_DB);
 
 // init database
 DATABASE_CONN.exec(`
@@ -39,13 +37,12 @@ export const getRolls = () =>
   DATABASE_CONN.prepare(`SELECT * FROM rolls`).all();
 
 export const getRollPhotos = (rollId: number) =>
-  DATABASE_CONN.prepare(`SELECT * FROM photos WHERE roll = ?`).all(
-    rollId,
-  );
+  DATABASE_CONN.prepare(`SELECT * FROM photos WHERE roll = ?`).all(rollId);
 
 export const getPhotosByCategory = (category: string) =>
   DATABASE_CONN.prepare(`SELECT * FROM photos WHERE categories LIKE ?`)
-    .all(`%${category}%`).filter((photo) =>
+    .all(`%${category}%`)
+    .filter((photo) =>
       (photo.categories as string)?.split?.(",").includes(category)
     );
 
@@ -69,8 +66,9 @@ export const removeFeaturedCategory = (name: string) =>
   ).get(name);
 
 export const addRoll = (name: string) =>
-  DATABASE_CONN.prepare(`INSERT INTO rolls (name) VALUES (?) RETURNING *`)
-    .get(name);
+  DATABASE_CONN.prepare(`INSERT INTO rolls (name) VALUES (?) RETURNING *`).get(
+    name,
+  );
 
 export const addPhoto = (
   roll: number,
@@ -84,17 +82,16 @@ export const addPhoto = (
 ) =>
   DATABASE_CONN.prepare(
     `INSERT INTO photos (roll, filename, datetaken, name, desc, is_fave, categories, exif) VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING *`,
-  )
-    .get(
-      roll,
-      filename,
-      taken,
-      name ?? null,
-      desc ?? null,
-      +is_fave,
-      categories.join(","),
-      exif ? JSON.stringify(exif) : null,
-    );
+  ).get(
+    roll,
+    filename,
+    taken,
+    name ?? null,
+    desc ?? null,
+    +is_fave,
+    categories.join(","),
+    exif ? JSON.stringify(exif) : null,
+  );
 
 export const deletePhoto = (id: number) =>
   DATABASE_CONN.prepare(`DELETE FROM photos WHERE id = ? RETURNING *`).get(id);
@@ -130,9 +127,11 @@ export function modifyRoll(
 
   if (columns.length === 0) return;
 
-  return DATABASE_CONN.prepare(`UPDATE rolls
+  return DATABASE_CONN.prepare(
+    `UPDATE rolls
                                 SET ${columns.map((c) => c + " = ?").join(",")}
-                                WHERE id = ? RETURNING *`).get(...params, id);
+                                WHERE id = ? RETURNING *`,
+  ).get(...params, id);
 }
 
 export function modifyPhoto(
@@ -173,7 +172,9 @@ export function modifyPhoto(
 
   if (columns.length === 0) return;
 
-  return DATABASE_CONN.prepare(`UPDATE photos
+  return DATABASE_CONN.prepare(
+    `UPDATE photos
                                 SET ${columns.map((c) => c + " = ?").join(",")}
-                                WHERE id = ? RETURNING *`).get(...params, id);
+                                WHERE id = ? RETURNING *`,
+  ).get(...params, id);
 }
