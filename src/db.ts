@@ -112,6 +112,7 @@ export function modifyRoll(
   id: number,
   name: string | undefined | null,
   dateadded: string | undefined,
+  desc: string | undefined | null,
 ) {
   const columns: string[] = [];
   const params: SQLInputValue[] = [];
@@ -120,6 +121,11 @@ export function modifyRoll(
     columns.push("name");
     params.push(name);
   }
+
+	if (desc !== undefined) {
+		columns.push("desc");
+		params.push(desc);
+	}
 
   if (dateadded !== undefined) {
     columns.push("dateadded");

@@ -134,6 +134,7 @@ app.patch("/admin/roll/:id", (ctx) => {
       +ctx.req.param("id"),
       ctx.req.query("name"),
       ctx.req.query("dateadded"),
+	 	ctx.req.query("desc"),
     ),
   );
 });
