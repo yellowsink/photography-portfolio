@@ -97,20 +97,25 @@ app.post("/admin/photo", async (ctx) => {
   // these filenames can be duplicated across rolls, dont use it as-is for s3
   const rawFilename = ctx.req.query("filename");
   if (!rawFilename) return ctx.text("Missing filename", 400);
-  const filename = `${crypto.randomUUID()}-${rawFilename}.webp`;
+	const filename = `${(crypto.randomUUID())}-${rawFilename}.avif`;
+  const thumbFilename = `THUMB_${filename}.webp`;
 
-  const body = await ctx.req.arrayBuffer();
-  if (!body) return ctx.text("Missing body", 400);
+  const avifBuf = await ctx.req.arrayBuffer();
+  if (!avifBuf) return ctx.text("Missing body", 400);
+
+  let contentType = ctx.req.header("Content-Type");
+  contentType = contentType?.startsWith("image/") ? contentType : "";
 
   // webp-ize and extract EXIF
-  const { compressed, exif } = await processImage(body);
+  const { thumb, exif } = await processImage(avifBuf);
 
   const rawTaken = ((exif as any)?.createDate ??
     lightFormat(new Date(), "yyyy:MM:dd HH:mm:ss")).split(" ");
 
   const taken = rawTaken[0].replaceAll(":", "-") + " " + rawTaken[1];
 
-  await uploadS3(filename, compressed.buffer as ArrayBuffer);
+  await uploadS3(filename, avifBuf);
+	await uploadS3(thumbFilename, thumb.buffer as ArrayBuffer);
 
   return ctx.json(
     addPhoto(
@@ -118,6 +123,7 @@ app.post("/admin/photo", async (ctx) => {
       filename,
       taken,
       ctx.req.query("categories")?.split(","),
+		contentType,
       ctx.req.query("name"),
       ctx.req.query("desc"),
       !!ctx.req.query("fave"),
@@ -181,7 +187,7 @@ app.get("/photo/:id/file", async (ctx) => {
 
   return new Response(s3Resp.body, {
     headers: {
-      "Content-Type": "image/webp", // we know this to always be true
+      "Content-Type": (photo.mime as string | null) ?? "image/webp",
       "Content-Length": s3Resp.headers.get("Content-Length") ?? "",
       ETag: s3Resp.headers.get("ETag") ?? "",
 
@@ -189,6 +195,24 @@ app.get("/photo/:id/file", async (ctx) => {
       "Cache-Control": "max-age=31557600, public, immutable",
     },
   });
+});
+
+app.get("/photo/:id/thumbnail", async (ctx) => {
+	const photo = getPhoto(+ctx.req.param("id"));
+	if (!photo?.filename) return ctx.text("Not found", 404);
+
+	const s3Resp = await getS3(`THUMB_${photo.filename}.webp`);
+
+	return new Response(s3Resp.body, {
+		headers: {
+			"Content-Type": "image/webp", // we know this to always be true
+			"Content-Length": s3Resp.headers.get("Content-Length") ?? "",
+			ETag: s3Resp.headers.get("ETag") ?? "",
+
+			// the important bit!
+			"Cache-Control": "max-age=31557600, public, immutable",
+		},
+	});
 });
 
 app.post("/test", async (ctx) => {

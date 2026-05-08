@@ -18,6 +18,7 @@ DATABASE_CONN.exec(`
 		id         INTEGER PRIMARY KEY AUTOINCREMENT,
 		roll       INTEGER NOT NULL REFERENCES rolls (id) ON DELETE CASCADE,
 		filename   TEXT NOT NULL,
+		mime       TEXT DEFAULT 'image/webp',
 		datetaken  TEXT,
 		dateadded  TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
 		name       TEXT,
@@ -76,13 +77,14 @@ export const addPhoto = (
   filename: string,
   taken: string,
   categories: string[] = [],
+  mime?: string,
   name?: string,
   desc?: string,
   is_fave = false,
   exif?: object,
 ) =>
   DATABASE_CONN.prepare(
-    `INSERT INTO photos (roll, filename, datetaken, name, desc, is_fave, categories, exif) VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING *`,
+    `INSERT INTO photos (roll, filename, datetaken, name, desc, is_fave, categories, exif, mime) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING *`,
   ).get(
     roll,
     filename,
@@ -92,6 +94,7 @@ export const addPhoto = (
     +is_fave,
     categories.join(","),
     exif ? JSON.stringify(exif) : null,
+	  mime ?? null
   );
 
 export const deletePhoto = (id: number) =>

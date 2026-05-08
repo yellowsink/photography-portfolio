@@ -21,7 +21,7 @@ export async function processImage(image: ArrayBuffer) {
     )
   );
 
-  const webp = await sharp(image).toFormat("webp").toBuffer();
+  const thumbnailWebp = await sharp(image).resize({ height: 480 }).webp({ quality: 90 }).toBuffer();
 
-  return { exif: exif, compressed: webp };
+  return { exif: exif, thumb: thumbnailWebp };
 }
