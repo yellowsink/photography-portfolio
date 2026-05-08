@@ -50,6 +50,7 @@ app.delete("/admin/roll/:id", async (ctx) => {
   for (const f of filesToDelete) {
     try {
       await deleteS3(f);
+		 try { await deleteS3(`THUMB_${f}.webp`); } catch (e) { console.error("Failed to delete thumb blob", e); }
     } catch {}
   }
 
@@ -61,6 +62,7 @@ app.delete("/admin/photo/:id", async (ctx) => {
   const fileToDelete = photo?.filename as string;
 
   await deleteS3(fileToDelete);
+	try { await deleteS3(`THUMB_${fileToDelete}.webp`); } catch (e) { console.error("Failed to delete thumb blob", e); }
 
   return ctx.json(photo);
 });
