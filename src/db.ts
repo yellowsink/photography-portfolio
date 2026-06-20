@@ -48,6 +48,9 @@ export const getPhotosByCategory = (category: string) =>
       (photo.categories as string)?.split?.(",").includes(category)
     );
 
+export const getFavouritedPhotos = () =>
+	DATABASE_CONN.prepare(`SELECT * FROM photos WHERE is_fave = TRUE`).all();
+
 export const getPhoto = (id: number) =>
   DATABASE_CONN.prepare(`SELECT * FROM photos WHERE id = ?`).get(id);
 

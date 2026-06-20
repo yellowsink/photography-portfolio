@@ -6,7 +6,7 @@ import {
 	addPhoto,
 	addRoll,
 	deletePhoto,
-	deleteRoll,
+	deleteRoll, getFavouritedPhotos,
 	getFeaturedCategories,
 	getPhoto,
 	getPhotosByCategory,
@@ -172,6 +172,11 @@ app.get("/roll", (ctx) => ctx.json(getRolls()));
 app.get(
   "/roll/:id/photos",
   (ctx) => ctx.json(getRollPhotos(+ctx.req.param("id"))),
+);
+
+app.get(
+	"/fave_photos",
+	(ctx) => ctx.json(getFavouritedPhotos()),
 );
 
 app.get(
