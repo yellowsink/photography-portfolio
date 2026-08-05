@@ -14,7 +14,7 @@ import {
 	getRolls,
 	modifyPhoto,
 	modifyRoll,
-	removeFeaturedCategory,
+	removeFeaturedCategory, removeRollTakenTimes,
 	upsertFeaturedCategory,
 } from "./db.ts";
 
@@ -146,6 +146,9 @@ app.patch("/admin/roll/:id", (ctx) => {
     ),
   );
 });
+
+// used for film rolls where taken time is useless
+app.post("/admin/roll/:id/clear_taken_times",  (ctx) => ctx.json(removeRollTakenTimes(ctx.req.param("id"))));
 
 app.patch("/admin/photo/:id", (ctx) => {
   const maybeFave = ctx.req.query("fave");

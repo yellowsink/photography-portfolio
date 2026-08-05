@@ -191,3 +191,13 @@ export function modifyPhoto(
                                 WHERE id = ? RETURNING *`,
   ).get(...params, id);
 }
+
+// used for film rolls where taken time is useless
+export function removeRollTakenTimes(rollId: number) {
+	// sure why not, return em to the caller
+	return DATABASE_CONN.prepare(
+		`UPDATE photos
+		 SET datetaken = NULL
+		 WHERE roll = ?`
+	).all(rollId)
+}
